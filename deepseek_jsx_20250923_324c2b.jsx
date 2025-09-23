@@ -29,6 +29,7 @@ function StudentManagement() {
   }, []);
 
   const fetchStudents = async () => {
+    
     try {
       setLoading(true);
       const response = await axios.get('https://localhost:7007/api/students');
