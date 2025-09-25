@@ -1,0 +1,32 @@
+[Route("api/[controller]")]
+[ApiController]
+[Authorize(Roles = "Administrator, Lecturer")]
+public class StudentsController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+
+    public StudentsController(ApplicationDbContext context)
+    {
+        _context = context;
+    }
+
+    // GET: api/Students
+    [HttpGet]
+    [Authorize(Roles = "Adminstrator, Lecturer, Student")]
+    public async Task<ActionResult<IEnumerable<Student>>> GetStudents()
+    {
+        if (User.IsInRole("Student"))
+        {
+            var studentIdClaim = User.FindFirst("StudentId")?.Value;
+
+            if (Guid.TryParse(studentIdClaim, out Guid studentId))
+            {
+                return await _context.Students
+                    .Include(s => s.Course)
+                    .Where(s => s.StudentId == studentId)
+                    .ToListAsync();
+            }
+            return Unauthorized();
+        }
+        return await _context.Students.Include(s => s.Course).ToListAsync();
+    }
